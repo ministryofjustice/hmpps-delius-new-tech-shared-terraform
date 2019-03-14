@@ -133,10 +133,10 @@ locals {
   }
 
   sg_map_ids = {
-    bastion_in_sg_id       = "${data.terraform_remote_state.security-groups.sg_ssh_bastion_in_id}"
-    sg_iaps_api_in         = "${data.terraform_remote_state.security-groups.sg_case_notes_external_lb_in}"
-    sg_iaps_db_in          = "${data.terraform_remote_state.security-groups.sg_case_notes_mongodb_db_in}"
-    sg_iaps_external_lb_in = "${data.terraform_remote_state.security-groups.sg_case_notes_api_in}"
+    bastion_in_sg_id             = "${data.terraform_remote_state.security-groups.sg_ssh_bastion_in_id}"
+    sg_case_notes_external_lb_in = "${data.terraform_remote_state.security-groups.sg_case_notes_external_lb_in}"
+    sg_case_notes_mongodb_db_in  = "${data.terraform_remote_state.security-groups.sg_case_notes_mongodb_db_in}"
+    sg_case_notes_api_in         = "${data.terraform_remote_state.security-groups.sg_case_notes_api_in}"
   }
 
   private_subnet_map = {

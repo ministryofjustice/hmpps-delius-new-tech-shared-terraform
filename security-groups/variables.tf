@@ -9,6 +9,6 @@ variable depends_on {
   type    = "list"
 }
 
-variable "allowed_cidr_block" {
+variable "user_access_cidr_blocks" {
   type = "list"
 }

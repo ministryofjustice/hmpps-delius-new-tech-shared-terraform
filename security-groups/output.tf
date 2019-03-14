@@ -1,16 +1,17 @@
 # SECURITY GROUPS
-output "security_groups_sg_internal_instance_id" {
-  value = "${local.internal_inst_sg_id}"
-}
-
-output "security_groups_sg_rds_id" {
-  value = "${local.db_sg_id}"
-}
-
-output "security_groups_sg_external_lb_id" {
-  value = "${local.external_lb_sg_id}"
-}
-
 output "security_groups_map" {
   value = "${local.sg_map_ids}"
+}
+
+# case notes
+output "security_groups_sg_case_notes_api_in" {
+  value = "${local.sg_case_notes_api_in}"
+}
+
+output "security_groups_sg_case_notes_mongodb_db_in" {
+  value = "${local.sg_case_notes_mongodb_db_in}"
+}
+
+output "security_groups_sg_case_notes_external_lb_in" {
+  value = "${local.sg_case_notes_external_lb_in}"
 }

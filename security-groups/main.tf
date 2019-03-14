@@ -33,7 +33,7 @@ locals {
   cidr_block             = "${data.terraform_remote_state.common.vpc_cidr_block}"
   common_name            = "${data.terraform_remote_state.common.common_name}"
   region                 = "${data.terraform_remote_state.common.region}"
-  iaps_app_name          = "${data.terraform_remote_state.common.iaps_app_name}"
+  app_name               = "${data.terraform_remote_state.common.app_name}"
   environment_identifier = "${data.terraform_remote_state.common.environment_identifier}"
   environment            = "${data.terraform_remote_state.common.environment}"
   tags                   = "${data.terraform_remote_state.common.common_tags}"
@@ -42,15 +42,15 @@ locals {
   db_cidr_block          = ["${data.terraform_remote_state.common.db_cidr_block}"]
   sg_map_ids             = "${data.terraform_remote_state.common.sg_map_ids}"
 
-  allowed_cidr_block = [
-    "${var.allowed_cidr_block}",
+  user_access_cidr_blocks = [
+    "${var.user_access_cidr_blocks}",
     "${data.terraform_remote_state.common.nat_gateway_ips}",
   ]
 
-  bastion_cidr_block  = ["${data.terraform_remote_state.common.bastion_vpc_public_cidr}"]
-  internal_inst_sg_id = "${data.terraform_remote_state.common.sg_map_ids["sg_iaps_api_in"]}"
-  db_sg_id            = "${data.terraform_remote_state.common.sg_map_ids["sg_iaps_db_in"]}"
-  external_lb_sg_id   = "${data.terraform_remote_state.common.sg_map_ids["sg_iaps_external_lb_in"]}"
+  bastion_cidr_block           = ["${data.terraform_remote_state.common.bastion_vpc_public_cidr}"]
+  sg_case_notes_api_in         = "${data.terraform_remote_state.common.sg_map_ids["sg_case_notes_api_in"]}"
+  sg_case_notes_mongodb_db_in  = "${data.terraform_remote_state.common.sg_map_ids["sg_case_notes_mongodb_db_in"]}"
+  sg_case_notes_external_lb_in = "${data.terraform_remote_state.common.sg_map_ids["sg_case_notes_external_lb_in"]}"
 }
 
 #######################################
@@ -61,7 +61,7 @@ locals {
 #-------------------------------------------------------------
 
 resource "aws_security_group_rule" "external_lb_ingress_http" {
-  security_group_id = "${local.external_lb_sg_id}"
+  security_group_id = "${local.sg_case_notes_external_lb_in}"
   from_port         = 80
   to_port           = 80
   protocol          = "tcp"
@@ -69,12 +69,12 @@ resource "aws_security_group_rule" "external_lb_ingress_http" {
   description       = "${local.common_name}-lb-external-sg-http"
 
   cidr_blocks = [
-    "${local.allowed_cidr_block}",
+    "${local.user_access_cidr_blocks}",
   ]
 }
 
 resource "aws_security_group_rule" "external_lb_ingress_https" {
-  security_group_id = "${local.external_lb_sg_id}"
+  security_group_id = "${local.sg_case_notes_external_lb_in}"
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
@@ -82,27 +82,27 @@ resource "aws_security_group_rule" "external_lb_ingress_https" {
   description       = "${local.common_name}-lb-external-sg-https"
 
   cidr_blocks = [
-    "${local.allowed_cidr_block}",
+    "${local.user_access_cidr_blocks}",
   ]
 }
 
 resource "aws_security_group_rule" "external_lb_egress_http" {
-  security_group_id        = "${local.external_lb_sg_id}"
+  security_group_id        = "${local.sg_case_notes_external_lb_in}"
   type                     = "egress"
   from_port                = 80
   to_port                  = 80
   protocol                 = "tcp"
-  source_security_group_id = "${local.internal_inst_sg_id}"
+  source_security_group_id = "${local.sg_case_notes_api_in}"
   description              = "${local.common_name}-instance-internal-http"
 }
 
 resource "aws_security_group_rule" "external_lb_egress_https" {
-  security_group_id        = "${local.external_lb_sg_id}"
+  security_group_id        = "${local.sg_case_notes_external_lb_in}"
   type                     = "egress"
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
-  source_security_group_id = "${local.internal_inst_sg_id}"
+  source_security_group_id = "${local.sg_case_notes_api_in}"
   description              = "${local.common_name}-instance-internal-https"
 }
 
@@ -110,38 +110,27 @@ resource "aws_security_group_rule" "external_lb_egress_https" {
 ### internal instance sg
 #-------------------------------------------------------------
 resource "aws_security_group_rule" "internal_lb_ingress_http" {
-  security_group_id        = "${local.internal_inst_sg_id}"
+  security_group_id        = "${local.sg_case_notes_api_in}"
   type                     = "ingress"
   from_port                = 80
   to_port                  = 80
   protocol                 = "tcp"
-  source_security_group_id = "${local.external_lb_sg_id}"
+  source_security_group_id = "${local.sg_case_notes_external_lb_in}"
   description              = "${local.common_name}-lb-ingress-http"
 }
 
 resource "aws_security_group_rule" "internal_lb_ingress_https" {
-  security_group_id        = "${local.internal_inst_sg_id}"
+  security_group_id        = "${local.sg_case_notes_api_in}"
   type                     = "ingress"
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"
-  source_security_group_id = "${local.external_lb_sg_id}"
+  source_security_group_id = "${local.sg_case_notes_external_lb_in}"
   description              = "${local.common_name}-lb-ingress-https"
 }
 
-# rdp
-resource "aws_security_group_rule" "internal_rdp" {
-  security_group_id = "${local.internal_inst_sg_id}"
-  type              = "ingress"
-  from_port         = 3389
-  to_port           = 3389
-  protocol          = "tcp"
-  cidr_blocks       = ["${local.bastion_cidr_block}"]
-  description       = "${local.common_name}-remote-access-rdp"
-}
-
 resource "aws_security_group_rule" "internal_inst_sg_ingress_self" {
-  security_group_id = "${local.internal_inst_sg_id}"
+  security_group_id = "${local.sg_case_notes_api_in}"
   type              = "ingress"
   from_port         = 0
   to_port           = 0
@@ -150,7 +139,7 @@ resource "aws_security_group_rule" "internal_inst_sg_ingress_self" {
 }
 
 resource "aws_security_group_rule" "internal_inst_sg_egress_self" {
-  security_group_id = "${local.internal_inst_sg_id}"
+  security_group_id = "${local.sg_case_notes_api_in}"
   type              = "egress"
   from_port         = 0
   to_port           = 0
@@ -158,25 +147,25 @@ resource "aws_security_group_rule" "internal_inst_sg_egress_self" {
   self              = true
 }
 
-resource "aws_security_group_rule" "internal_inst_sg_egress_oracle" {
-  security_group_id        = "${local.internal_inst_sg_id}"
+resource "aws_security_group_rule" "internal_inst_sg_egress_mongodb" {
+  security_group_id        = "${local.sg_case_notes_api_in}"
   type                     = "egress"
-  from_port                = "1521"
-  to_port                  = "1521"
+  from_port                = "27017"
+  to_port                  = "27017"
   protocol                 = "tcp"
-  source_security_group_id = "${local.db_sg_id}"
-  description              = "${local.common_name}-rds-sg"
+  source_security_group_id = "${local.sg_case_notes_mongodb_db_in}"
+  description              = "${local.common_name}-mongodb-sg"
 }
 
 #-------------------------------------------------------------
-### rds sg
+### mongodb sg
 #-------------------------------------------------------------
-resource "aws_security_group_rule" "rds_sg_egress_oracle" {
-  security_group_id        = "${local.db_sg_id}"
+resource "aws_security_group_rule" "mongodb_sg_egress_mongodb" {
+  security_group_id        = "${local.sg_case_notes_mongodb_db_in}"
   type                     = "ingress"
-  from_port                = "1521"
-  to_port                  = "1521"
+  from_port                = "27017"
+  to_port                  = "27017"
   protocol                 = "tcp"
-  source_security_group_id = "${local.internal_inst_sg_id}"
-  description              = "${local.common_name}-rds-sg"
+  source_security_group_id = "${local.sg_case_notes_api_in}"
+  description              = "${local.common_name}-mongodb-sg"
 }
