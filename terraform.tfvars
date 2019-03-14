@@ -6,7 +6,7 @@ terragrunt = {
     config {
       encrypt = true
       bucket  = "${get_env("TG_REMOTE_STATE_BUCKET", "REMOTE_STATE_BUCKET")}"
-      key     = "iaps/${path_relative_to_include()}/terraform.tfstate"
+      key     = "new-tech/${path_relative_to_include()}/terraform.tfstate"
       region  = "${get_env("TG_REGION", "AWS-REGION")}"
 
       dynamodb_table = "${get_env("TG_ENVIRONMENT_IDENTIFIER", "ENVIRONMENT_IDENTIFIER")}-lock-table"

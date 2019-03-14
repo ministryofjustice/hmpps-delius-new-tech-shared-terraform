@@ -19,7 +19,7 @@ data "terraform_remote_state" "common" {
 
   config {
     bucket = "${var.remote_state_bucket_name}"
-    key    = "iaps/common/terraform.tfstate"
+    key    = "new-tech/common/terraform.tfstate"
     region = "${var.region}"
   }
 }
