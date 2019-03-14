@@ -103,7 +103,7 @@ locals {
   public_zone_id               = "${data.terraform_remote_state.common.public_zone_id}"
   environment_identifier       = "${data.terraform_remote_state.common.environment_identifier}"
   short_environment_identifier = "${data.terraform_remote_state.common.short_environment_identifier}"
-  common_name                  = "${data.terraform_remote_state.common.common_name}-mongodb"
+  common_name                  = "${data.terraform_remote_state.common.common_name}-case-notes"
   region                       = "${var.region}"
   app_name                     = "${data.terraform_remote_state.common.app_name}"
   ssh_deployer_key             = "${data.terraform_remote_state.common.common_ssh_deployer_key}"
@@ -125,7 +125,8 @@ locals {
     "${data.terraform_remote_state.common.common_sg_outbound_id}",
   ]
 
-  tags = "${data.terraform_remote_state.common.common_tags}"
+  tags        = "${data.terraform_remote_state.common.common_tags}"
+  application = "mongodb"
 }
 
 ############################################
@@ -133,8 +134,20 @@ locals {
 ############################################
 
 module "ecs_cluster" {
-  source       = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=issue-135//modules//ecs//ecs_cluster"
-  cluster_name = "${local.common_name}"
+  source       = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=master//modules//ecs//ecs_cluster"
+  cluster_name = "${local.common_name}-${local.application}"
 
   tags = "${local.tags}"
+}
+
+############################################
+# CREATE LOG GROUPS FOR CONTAINER LOGS
+############################################
+
+module "create_loggroup" {
+  source                   = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=master//modules//cloudwatch//loggroup"
+  log_group_path           = "${local.common_name}"
+  loggroupname             = "${local.application}"
+  cloudwatch_log_retention = "${var.cloudwatch_log_retention}"
+  tags                     = "${local.tags}"
 }
