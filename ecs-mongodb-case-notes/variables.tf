@@ -6,3 +6,11 @@ variable "remote_state_bucket_name" {
 }
 
 variable "cloudwatch_log_retention" {}
+
+variable "image_url" {
+  default = "mongodb:latest"
+}
+
+variable "mongodb_root_user" {
+  default = "root"
+}
