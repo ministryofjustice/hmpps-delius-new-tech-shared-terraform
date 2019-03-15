@@ -124,15 +124,13 @@ locals {
     "${data.terraform_remote_state.common.common_sg_outbound_id}",
   ]
 
-  tags                  = "${data.terraform_remote_state.common.common_tags}"
-  application           = "mongodb"
-  image_url             = "${var.image_url}"
-  mongodb_port          = "27017"
-  mongodb_root_user     = "${var.mongodb_root_user}"
-  data_volume_name      = "mongodb_data"
-  data_volume_host_path = "/opt/mongodb"
-  ecs_memory            = "2048"
-  ecs_cpu_units         = "256"
+  tags              = "${data.terraform_remote_state.common.common_tags}"
+  application       = "case-notes"
+  image_url         = "${var.image_url}"
+  app_port          = "8080"
+  mongodb_root_user = "${var.mongodb_root_user}"
+  ecs_memory        = "2048"
+  ecs_cpu_units     = "256"
 }
 
 ############################################
@@ -141,7 +139,7 @@ locals {
 
 module "ecs_cluster" {
   source       = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=master//modules//ecs//ecs_cluster"
-  cluster_name = "${local.common_name}-${local.application}"
+  cluster_name = "${local.common_name}"
 
   tags = "${local.tags}"
 }
@@ -194,7 +192,7 @@ data "template_file" "app_task_definition" {
 
   vars {
     environment            = "${local.environment}"
-    app_port               = "${local.mongodb_port}"
+    app_port               = "${local.app_port}"
     image_url              = "${local.image_url}"
     container_name         = "${local.application}"
     log_group_name         = "${module.create_loggroup.loggroup_name}"
@@ -202,19 +200,14 @@ data "template_file" "app_task_definition" {
     memory                 = "${local.ecs_memory}"
     cpu_units              = "${local.ecs_cpu_units}"
     s3_bucket_config       = "${local.config-bucket}"
-    data_volume_name       = "${local.data_volume_name}"
-    data_volume_host_path  = "${local.data_volume_host_path}"
     mongodb_root_user      = "${local.mongodb_root_user}"
     root_user_password_arn = "${aws_ssm_parameter.param.arn}"
   }
 }
 
 module "app_task_definition" {
-  source                = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=master//modules//ecs//ecs-taskdefinitions//appwith_single_volume"
-  app_name              = "${local.common_name}-${local.application}"
+  source                = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=master//modules//ecs//ecs-taskdefinitions//app"
+  app_name              = "${local.common_name}"
   container_name        = "${local.application}"
   container_definitions = "${data.template_file.app_task_definition.rendered}"
-
-  data_volume_name      = "${local.data_volume_name}"
-  data_volume_host_path = "${local.data_volume_host_path}"
 }
