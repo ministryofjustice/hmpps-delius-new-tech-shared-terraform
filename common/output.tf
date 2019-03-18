@@ -9,6 +9,10 @@ output "common_account_id" {
   value = "${local.account_id}"
 }
 
+output "availability_zone_map" {
+  value = "${local.availability_zone_map}"
+}
+
 output "common_role_arn" {
   value = "${local.role_arn}"
 }
@@ -164,4 +168,8 @@ output "nat_gateway_ips" {
 # bastion cidr
 output "bastion_vpc_public_cidr" {
   value = ["${local.bastion_cidrs}"]
+}
+
+output "bastion_inventory" {
+  value = "${local.bastion_inventory}"
 }

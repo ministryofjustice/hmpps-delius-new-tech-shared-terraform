@@ -38,3 +38,7 @@ variable "cloudwatch_log_retention" {}
 variable "password_length" {
   default = "18"
 }
+
+variable "bastion_inventory" {
+  default = "dev"
+}

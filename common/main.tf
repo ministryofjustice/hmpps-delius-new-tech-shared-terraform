@@ -106,6 +106,7 @@ data "aws_ami" "amazon_ami" {
 
 locals {
   account_id                   = "${data.aws_caller_identity.current.account_id}"
+  availability_zone_map        = "${data.terraform_remote_state.vpc.availability_zone_map}"
   vpc_id                       = "${data.terraform_remote_state.vpc.vpc_id}"
   cidr_block                   = "${data.terraform_remote_state.vpc.vpc_cidr_block}"
   allowed_cidr_block           = ["${data.terraform_remote_state.vpc.vpc_cidr_block}"]
@@ -114,6 +115,7 @@ locals {
   external_domain              = "${data.terraform_remote_state.vpc.public_zone_name}"
   public_zone_id               = "${data.terraform_remote_state.vpc.public_zone_id}"
   common_name                  = "${var.short_environment_identifier}"
+  bastion_inventory            = "${var.bastion_inventory}"
   lb_account_id                = "${var.lb_account_id}"
   region                       = "${var.region}"
   role_arn                     = "${var.role_arn}"
