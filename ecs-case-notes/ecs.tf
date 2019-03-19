@@ -1,3 +1,32 @@
+#-------------------------------------------------------------
+### Getting the latest centos ami
+#-------------------------------------------------------------
+data "aws_ami" "ecs_ami" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["HMPPS ECS Centos master*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  owners = ["${data.terraform_remote_state.common.common_account_id}", "895523100917"] # MOJ
+}
+
 ####################################################
 # Locals
 ####################################################

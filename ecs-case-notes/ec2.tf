@@ -14,7 +14,7 @@ data "aws_ami" "centos_ami" {
 
   filter {
     name   = "name"
-    values = ["HMPPS Base CentOS master *"]
+    values = ["HMPPS Base Docker Centos master*"]
   }
 
   filter {

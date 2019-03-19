@@ -50,7 +50,7 @@ cat << EOF > ~/bootstrap.yml
 EOF
 
 ansible-galaxy install -f -r ~/requirements.yml
-HAS_DOCKER=true ansible-playbook ~/bootstrap.yml
+ansible-playbook ~/bootstrap.yml
 
 # Install awslogs and the jq JSON parser
 yum install -y lvm2
