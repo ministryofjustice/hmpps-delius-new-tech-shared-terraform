@@ -117,7 +117,6 @@ locals {
   public_cidr_block            = ["${data.terraform_remote_state.common.db_cidr_block}"]
   config-bucket                = "${data.terraform_remote_state.common.common_s3-config-bucket}"
   ecs_service_role             = "${data.terraform_remote_state.iam.iam_role_int_ecs_role_arn}"
-  service_desired_count        = "1"
   instance_profile             = "${data.terraform_remote_state.iam.iam_case_notes_app_instance_profile_name}"
   sg_map_ids                   = "${data.terraform_remote_state.common.sg_map_ids}"
   bastion_inventory            = "${data.terraform_remote_state.common.bastion_inventory}"

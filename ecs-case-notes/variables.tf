@@ -51,3 +51,8 @@ variable "case-notes-health_check" {
   description = "A health check block"
   type        = "list"
 }
+
+# ECS service
+variable "case-notes-service_desired_count" {
+  default = 1
+}

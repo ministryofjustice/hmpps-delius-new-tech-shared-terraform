@@ -22,7 +22,7 @@ module "create_app_elb" {
   bucket_prefix               = "${local.lb_name}"
   interval                    = 60
   ssl_certificate_id          = "${local.certificate_arn}"
-  instance_port               = 80
+  instance_port               = "${local.app_port}"
   instance_protocol           = "http"
   lb_port                     = 80
   lb_port_https               = 443

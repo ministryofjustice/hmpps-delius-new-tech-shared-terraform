@@ -85,3 +85,12 @@ output "asg_elb_zone_id" {
 output "asg_elb_dns_cname" {
   value = "${aws_route53_record.dns_entry.fqdn}"
 }
+
+# ECS Service
+output "ecs_service_id" {
+  value = "${module.app_service.ecs_service_id}"
+}
+
+output "ecs_service_name" {
+  value = "${module.app_service.ecs_service_name}"
+}
