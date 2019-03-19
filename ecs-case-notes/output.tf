@@ -29,6 +29,20 @@ output "mongodb_root_user_password_parameter_name" {
   value = "${aws_ssm_parameter.param.name}"
 }
 
+# primary ec2
+output "mongodb_instance_id" {
+  value = "${module.create-ec2-instance.instance_id}"
+}
+
+output "mongodb_instance_private_ip" {
+  value = "${module.create-ec2-instance.private_ip}"
+}
+
+# dns
+output "mongodb_instance_dns" {
+  value = "${aws_route53_record.mongodb.fqdn}"
+}
+
 # Task definition
 # output "task_definition_arn" {
 #   value = "${module.app_task_definition.task_definition_arn}"
