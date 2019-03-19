@@ -218,11 +218,41 @@ resource "aws_security_group_rule" "https" {
   description       = "${local.common_name}-https"
 }
 
-# #-------------------------------------------
-# ### S3 bucket for config
-# #--------------------------------------------
+#-------------------------------------------
+### S3 bucket for config
+#--------------------------------------------
 module "s3config_bucket" {
   source         = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=pre-shared-vpc//modules//s3bucket//s3bucket_without_policy"
   s3_bucket_name = "${local.common_name}"
   tags           = "${local.tags}"
+}
+
+#-------------------------------------------
+### S3 bucket for logs
+#--------------------------------------------
+module "s3_lb_logs_bucket" {
+  source         = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=pre-shared-vpc//modules//s3bucket//s3bucket_without_policy"
+  s3_bucket_name = "${local.common_name}-lb-logs"
+  tags           = "${local.tags}"
+}
+
+#-------------------------------------------
+### Attaching S3 bucket policy to ALB logs bucket
+#--------------------------------------------
+
+data "template_file" "s3alb_logs_policy" {
+  template = "${file("../policies/s3_alb_policy.json")}"
+
+  vars {
+    s3_bucket_name   = "${module.s3_lb_logs_bucket.s3_bucket_name}"
+    s3_bucket_prefix = "${local.short_environment_identifier}-*"
+    aws_account_id   = "${local.account_id}"
+    lb_account_id    = "${local.lb_account_id}"
+  }
+}
+
+module "s3alb_logs_policy" {
+  source       = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=pre-shared-vpc//modules//s3bucket//s3bucket_policy"
+  s3_bucket_id = "${module.s3_lb_logs_bucket.s3_bucket_name}"
+  policyfile   = "${data.template_file.s3alb_logs_policy.rendered}"
 }

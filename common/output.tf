@@ -26,6 +26,10 @@ output "common_s3-config-bucket" {
   value = "${module.s3config_bucket.s3_bucket_name}"
 }
 
+output "common_s3_lb_logs_bucket" {
+  value = "${module.s3_lb_logs_bucket.s3_bucket_name}"
+}
+
 # SSH KEY
 output "common_ssh_deployer_key" {
   value = "${local.ssh_deployer_key}"

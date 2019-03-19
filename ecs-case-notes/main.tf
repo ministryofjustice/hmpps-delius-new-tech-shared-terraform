@@ -110,7 +110,7 @@ locals {
   environment                  = "${data.terraform_remote_state.common.environment}"
   ssh_deployer_key             = "${data.terraform_remote_state.common.common_ssh_deployer_key}"
   app_hostnames                = "${data.terraform_remote_state.common.app_hostnames}"
-  certificate_arn              = ["${data.aws_acm_certificate.cert.arn}"]
+  certificate_arn              = "${data.aws_acm_certificate.cert.arn}"
   public_subnet_ids            = ["${data.terraform_remote_state.common.public_subnet_ids}"]
   private_subnet_ids           = ["${data.terraform_remote_state.common.private_subnet_ids}"]
   db_subnet_ids                = ["${data.terraform_remote_state.common.db_subnet_ids}"]
@@ -126,6 +126,10 @@ locals {
     "${data.terraform_remote_state.security-groups.security_groups_sg_case_notes_mongodb_db_in}",
     "${data.terraform_remote_state.common.common_sg_outbound_id}",
     "${data.terraform_remote_state.common.sg_map_ids["bastion_in_sg_id"]}",
+  ]
+
+  external_lb_security_groups = [
+    "${data.terraform_remote_state.security-groups.security_groups_sg_case_notes_external_lb_in}",
   ]
 
   tags = "${data.terraform_remote_state.common.common_tags}"

@@ -35,6 +35,28 @@ data "aws_ami" "centos_ami" {
   owners = ["${data.terraform_remote_state.common.common_account_id}", "895523100917"] # MOJ
 }
 
+###############################################
+# MONGODB DB PASSWORD
+###############################################
+resource "random_string" "mongodb_password" {
+  length  = 20
+  special = true
+}
+
+# Add to SSM
+resource "aws_ssm_parameter" "param" {
+  name        = "${local.common_name}-${local.application}-root-user-password"
+  description = "${local.common_name}-${local.application}-root-user-password"
+  type        = "SecureString"
+  value       = "${sha256(bcrypt(random_string.mongodb_password.result))}"
+
+  tags = "${merge(local.tags, map("Name", "${local.common_name}-${local.application}-root-user-password"))}"
+
+  lifecycle {
+    ignore_changes = ["value"]
+  }
+}
+
 #-------------------------------------------------------------
 ### Create primary 
 #-------------------------------------------------------------
