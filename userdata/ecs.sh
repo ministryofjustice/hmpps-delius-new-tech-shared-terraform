@@ -56,6 +56,7 @@ ansible-playbook ~/bootstrap.yml
 sed -i 's/ECS_CLUSTER=default/ECS_CLUSTER=${ecs_cluster}/g' /etc/ecs/ecs.config
 
 #restart ecs-agent
+docker rm -f ecs-agent
 
 docker run --name ecs-agent \
     --detach=true \
