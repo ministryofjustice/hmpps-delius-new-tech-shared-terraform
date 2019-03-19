@@ -116,3 +116,60 @@ module "app_service" {
   service_desired_count           = "${local.service_desired_count}"
   elb_name                        = "${module.create_app_elb.environment_elb_name}"
 }
+
+#-------------------------------------------------------------
+### Create ecs  
+#-------------------------------------------------------------
+
+data "template_file" "userdata_ecs" {
+  template = "${file("../userdata/ecs.sh")}"
+
+  vars {
+    app_name             = "${local.app_name}"
+    bastion_inventory    = "${local.bastion_inventory}"
+    env_identifier       = "${local.environment_identifier}"
+    short_env_identifier = "${local.short_environment_identifier}"
+    route53_sub_domain   = "${local.environment}.${local.app_name}"
+    container_name       = "${local.service}"
+    private_domain       = "${local.internal_domain}"
+    account_id           = "${local.account_id}"
+    internal_domain      = "${local.internal_domain}"
+    environment          = "${local.environment}"
+    common_name          = "${local.common_name}"
+    ecs_cluster          = "${module.ecs_cluster.ecs_cluster_name}"
+  }
+}
+
+############################################
+# CREATE LAUNCH CONFIG FOR EC2 RUNNING SERVICES
+############################################
+
+module "launch_cfg" {
+  source                      = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=master//modules//launch_configuration//noblockdevice"
+  launch_configuration_name   = "${local.common_name}"
+  image_id                    = "${data.aws_ami.ecs_ami.id}"
+  instance_type               = "t2.medium"
+  volume_size                 = "30"
+  instance_profile            = "${local.instance_profile}"
+  key_name                    = "${local.ssh_deployer_key}"
+  associate_public_ip_address = false
+  security_groups             = ["${local.app_security_groups}"]
+  user_data                   = "${data.template_file.userdata_ecs.rendered}"
+}
+
+# ############################################
+# # CREATE AUTO SCALING GROUP
+# ############################################
+
+#AZ1
+module "auto_scale_az1" {
+  source               = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=pre-shared-vpc//modules//autoscaling//group//asg_classic_lb"
+  asg_name             = "${local.common_name}-az1"
+  subnet_ids           = ["${local.private_subnet_ids[0]}"]
+  asg_min              = 1
+  asg_max              = 1
+  asg_desired          = 1
+  launch_configuration = "${module.launch_cfg.launch_name}"
+  load_balancers       = ["${module.create_app_elb.environment_elb_name}"]
+  tags                 = "${local.tags}"
+}

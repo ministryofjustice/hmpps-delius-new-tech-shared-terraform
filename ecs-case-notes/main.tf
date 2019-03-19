@@ -127,6 +127,12 @@ locals {
     "${data.terraform_remote_state.common.sg_map_ids["bastion_in_sg_id"]}",
   ]
 
+  app_security_groups = [
+    "${data.terraform_remote_state.security-groups.security_groups_sg_case_notes_api_in}",
+    "${data.terraform_remote_state.common.common_sg_outbound_id}",
+    "${data.terraform_remote_state.common.sg_map_ids["bastion_in_sg_id"]}",
+  ]
+
   external_lb_security_groups = [
     "${data.terraform_remote_state.security-groups.security_groups_sg_case_notes_external_lb_in}",
   ]
