@@ -112,21 +112,11 @@ resource "aws_security_group_rule" "external_lb_egress_https" {
 resource "aws_security_group_rule" "internal_lb_ingress_http" {
   security_group_id        = "${local.sg_case_notes_api_in}"
   type                     = "ingress"
-  from_port                = 80
-  to_port                  = 80
+  from_port                = 8080
+  to_port                  = 8080
   protocol                 = "tcp"
   source_security_group_id = "${local.sg_case_notes_external_lb_in}"
   description              = "${local.common_name}-lb-ingress-http"
-}
-
-resource "aws_security_group_rule" "internal_lb_ingress_https" {
-  security_group_id        = "${local.sg_case_notes_api_in}"
-  type                     = "ingress"
-  from_port                = 443
-  to_port                  = 443
-  protocol                 = "tcp"
-  source_security_group_id = "${local.sg_case_notes_external_lb_in}"
-  description              = "${local.common_name}-lb-ingress-https"
 }
 
 resource "aws_security_group_rule" "internal_inst_sg_ingress_self" {
