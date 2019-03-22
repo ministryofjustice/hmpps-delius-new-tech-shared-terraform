@@ -106,7 +106,7 @@ module "app_task_definition" {
 ############################################
 
 module "app_service" {
-  source                          = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=issue-137//modules//ecs/ecs_service//noloadbalancer//elb"
+  source                          = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=master//modules//ecs/ecs_service//noloadbalancer//elb"
   servicename                     = "${local.common_name}"
   clustername                     = "${module.ecs_cluster.ecs_cluster_id}"
   ecs_service_role                = "${local.ecs_service_role}"
