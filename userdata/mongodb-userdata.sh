@@ -153,14 +153,12 @@ TimeoutStartSec=0
 Restart=always
 ExecStartPre=-/usr/bin/docker stop ${container_name}
 ExecStartPre=-/usr/bin/docker rm ${container_name}
-ExecStartPre=-/usr/bin/docker pull ${image_url}
+ExecStartPre=-/usr/bin/docker pull mongo:latest
 ExecStart=/usr/bin/docker run --name ${container_name} \
   -p 27017:27017 \
   -v /opt/mongodb/data:/data/db:z \
   -v /opt/mongodb/backups:/opt/backups:z \
-  -e "TZ=Europe/London" \
-  -e "MONGO_INITDB_ROOT_USERNAME=${mongodb_root_user}" \
-  -e "MONGO_INITDB_ROOT_PASSWORD=${mongodb_root_user}" ${image_url}
+  -e "TZ=Europe/London" mongo:latest
 ExecStop=-/usr/bin/docker rm -f ${container_name}
 [Install]
 WantedBy=multi-user.target' > /etc/systemd/system/mongodb.service

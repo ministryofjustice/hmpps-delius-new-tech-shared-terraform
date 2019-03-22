@@ -7,7 +7,7 @@ variable "remote_state_bucket_name" {
 
 variable "cloudwatch_log_retention" {}
 
-variable "image_url" {
+variable "case-notes-image_url" {
   default = "mongo:latest"
 }
 
@@ -55,4 +55,8 @@ variable "case-notes-health_check" {
 # ECS service
 variable "case-notes-service_desired_count" {
   default = 1
+}
+
+variable "push_base_url" {
+  default = "http://localhost:8085/delius"
 }

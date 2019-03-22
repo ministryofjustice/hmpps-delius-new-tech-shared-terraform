@@ -33,13 +33,14 @@ data "aws_ami" "ecs_ami" {
 
 locals {
   application           = "case-notes"
-  image_url             = "${var.image_url}"
+  image_url             = "${var.case-notes-image_url}"
   app_port              = "8080"
   mongodb_root_user     = "${var.mongodb_root_user}"
   ecs_memory            = "2048"
   ecs_cpu_units         = "256"
   logs_bucket           = "${data.terraform_remote_state.common.common_s3_lb_logs_bucket}"
   service_desired_count = "${var.case-notes-service_desired_count}"
+  push_base_url         = "${var.push_base_url}"
 }
 
 ############################################
@@ -78,17 +79,18 @@ data "template_file" "app_task_definition" {
   template = "${file("../task_definitions/case-notes.conf")}"
 
   vars {
-    environment            = "${local.environment}"
-    app_port               = "${local.app_port}"
-    image_url              = "${local.image_url}"
-    container_name         = "${local.application}"
-    log_group_name         = "${module.create_loggroup.loggroup_name}"
-    log_group_region       = "${local.region}"
-    memory                 = "${local.ecs_memory}"
-    cpu_units              = "${local.ecs_cpu_units}"
-    s3_bucket_config       = "${local.config-bucket}"
-    mongodb_root_user      = "${local.mongodb_root_user}"
-    root_user_password_arn = "${aws_ssm_parameter.param.arn}"
+    environment      = "${local.environment}"
+    app_port         = "${local.app_port}"
+    image_url        = "${local.image_url}"
+    container_name   = "${local.application}"
+    log_group_name   = "${module.create_loggroup.loggroup_name}"
+    log_group_region = "${local.region}"
+    memory           = "${local.ecs_memory}"
+    cpu_units        = "${local.ecs_cpu_units}"
+    s3_bucket_config = "${local.config-bucket}"
+    mongo_db_host    = "${aws_route53_record.mongodb.fqdn}"
+    mongo_db_name    = "pollpush"
+    push_base_url    = "${local.push_base_url}"
   }
 }
 
@@ -104,17 +106,14 @@ module "app_task_definition" {
 ############################################
 
 module "app_service" {
-  source                          = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=master//modules//ecs/ecs_service//withloadbalancer//elb"
+  source                          = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=issue-137//modules//ecs/ecs_service//noloadbalancer//elb"
   servicename                     = "${local.common_name}"
   clustername                     = "${module.ecs_cluster.ecs_cluster_id}"
   ecs_service_role                = "${local.ecs_service_role}"
-  containername                   = "${local.application}"
-  containerport                   = "${local.app_port}"
   task_definition_family          = "${module.app_task_definition.task_definition_family}"
   task_definition_revision        = "${module.app_task_definition.task_definition_revision}"
   current_task_definition_version = "${data.aws_ecs_task_definition.app_task_definition.revision}"
   service_desired_count           = "${local.service_desired_count}"
-  elb_name                        = "${module.create_app_elb.environment_elb_name}"
 }
 
 #-------------------------------------------------------------
