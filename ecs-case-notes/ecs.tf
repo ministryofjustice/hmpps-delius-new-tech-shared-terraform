@@ -106,7 +106,7 @@ module "app_task_definition" {
 ############################################
 
 module "app_service" {
-  source                          = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=master//modules//ecs/ecs_service//noloadbalancer//elb"
+  source                          = "git::https://github.com/ministryofjustice/hmpps-terraform-modules.git?ref=issue-137//modules//ecs/ecs_service//noloadbalancer//elb"
   servicename                     = "${local.common_name}"
   clustername                     = "${module.ecs_cluster.ecs_cluster_id}"
   ecs_service_role                = "${local.ecs_service_role}"
@@ -169,6 +169,6 @@ module "auto_scale_az1" {
   asg_max              = 1
   asg_desired          = 1
   launch_configuration = "${module.launch_cfg.launch_name}"
-  load_balancers       = ["${module.create_app_elb.environment_elb_name}"]
+  load_balancers       = []
   tags                 = "${local.tags}"
 }
